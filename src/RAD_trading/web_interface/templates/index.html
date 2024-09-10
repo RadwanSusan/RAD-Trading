@@ -6,335 +6,678 @@
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1.0" />
-		<title>RAD Trading Bot</title>
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<title>RAD Trading Backtesting Interface</title>
 		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<style>
 			body {
 				font-family: Arial, sans-serif;
-				max-width: 800px;
-				margin: 0 auto;
+				line-height: 1.6;
 				padding: 20px;
 			}
 			h1,
-			h2 {
-				text-align: center;
+			h2,
+			h3 {
+				color: #333;
 			}
 			form {
-				display: grid;
-				gap: 10px;
-			}
-			button {
-				cursor: pointer;
-			}
-			.tab {
-				display: none;
-			}
-			.tab-buttons {
-				display: flex;
-				justify-content: center;
 				margin-bottom: 20px;
 			}
-			.tab-buttons button {
-				margin: 0 10px;
+			label {
+				display: inline-block;
+				width: 150px;
+			}
+			input,
+			select {
+				margin-bottom: 10px;
+			}
+			table {
+				border-collapse: collapse;
+				width: 100%;
+			}
+			th,
+			td {
+				border: 1px solid #ddd;
+				padding: 8px;
+				text-align: left;
+			}
+			th {
+				background-color: #f2f2f2;
 			}
 		</style>
 	</head>
 	<body>
-		<h1>RAD Trading Bot</h1>
-
-		<div class="tab-buttons">
-			<button onclick="openTab('live-trading')">Live Trading</button>
-			<button onclick="openTab('backtesting')">Backtesting</button>
-		</div>
-
+		<h1>RAD Trading Backtesting Interface</h1>
+		<h2>Run Backtest</h2>
+		<form id="backtest-form">
+			<label for="strategy">Strategy:</label>
+			<select
+				id="strategy"
+				name="strategy"
+				required></select
+			><br /><br />
+			<div id="strategy-params"></div>
+			<label for="symbol">Symbol:</label>
+			<input
+				type="text"
+				id="symbol"
+				name="symbol"
+				required /><br /><br />
+			<label for="timeframe">Timeframe:</label>
+			<select
+				id="timeframe"
+				name="timeframe"
+				required>
+				<option value="M1">1 Minute</option>
+				<option value="M5">5 Minutes</option>
+				<option value="M15">15 Minutes</option>
+				<option value="M30">30 Minutes</option>
+				<option value="H1">1 Hour</option>
+				<option value="H4">4 Hours</option>
+				<option value="D1">1 Day</option>
+				<option value="W1">1 Week</option>
+				<option value="MN1">1 Month</option></select
+			><br /><br />
+			<label for="start_date">Start Date:</label>
+			<input
+				type="date"
+				id="start_date"
+				name="start_date"
+				required /><br /><br />
+			<label for="end_date">End Date:</label>
+			<input
+				type="date"
+				id="end_date"
+				name="end_date"
+				required /><br /><br />
+			<label for="initial_balance">Initial Balance:</label>
+			<input
+				type="number"
+				id="initial_balance"
+				name="initial_balance"
+				required /><br /><br />
+			<input
+				type="submit"
+				value="Run Backtest" />
+		</form>
 		<div
-			id="live-trading"
-			class="tab">
-			<h2>Live Trading</h2>
-			<form id="bot-form">
-				<label for="symbols">Symbols (comma-separated):</label>
-				<input
-					type="text"
-					id="symbols"
-					name="symbols"
-					required />
-
-				<label for="timeframe">Timeframe:</label>
-				<select
-					id="timeframe"
-					name="timeframe"
-					required>
-					<option value="TIMEFRAME_M1">1 minute</option>
-					<option value="TIMEFRAME_M5">5 minutes</option>
-					<option value="TIMEFRAME_M15">15 minutes</option>
-					<option value="TIMEFRAME_H1">1 hour</option>
-					<option value="TIMEFRAME_H4">4 hours</option>
-					<option value="TIMEFRAME_D1">1 day</option>
-				</select>
-
-				<label for="strategy_type">Strategy:</label>
-				<select
-					id="strategy_type"
-					name="strategy_type"
-					required>
-					<option value="SMA">SMA Crossover</option>
-					<option value="RSI">RSI</option>
-				</select>
-
-				<div id="sma-params">
-					<label for="short_period">Short SMA Period:</label>
-					<input
-						type="number"
-						id="short_period"
-						name="short_period" />
-
-					<label for="long_period">Long SMA Period:</label>
-					<input
-						type="number"
-						id="long_period"
-						name="long_period" />
-				</div>
-
-				<div
-					id="rsi-params"
-					style="display: none">
-					<label for="rsi_period">RSI Period:</label>
-					<input
-						type="number"
-						id="rsi_period"
-						name="rsi_period" />
-
-					<label for="overbought">Overbought Level:</label>
-					<input
-						type="number"
-						id="overbought"
-						name="overbought" />
-
-					<label for="oversold">Oversold Level:</label>
-					<input
-						type="number"
-						id="oversold"
-						name="oversold" />
-				</div>
-
-				<label for="risk_percentage">Risk Percentage:</label>
-				<input
-					type="number"
-					id="risk_percentage"
-					name="risk_percentage"
-					step="0.1"
-					required />
-
-				<button
-					type="submit"
-					id="start-bot">
-					Start Bot
-				</button>
-			</form>
+			id="backtest-results"
+			style="display: none">
+			<h3>Backtest Results</h3>
+			<div id="metrics-table"></div>
+			<div id="equity-curve"></div>
+			<div id="drawdown-curve"></div>
+			<h4>Trades</h4>
+			<table id="trades-table">
+				<thead>
+					<tr>
+						<th>Entry Time</th>
+						<th>Exit Time</th>
+						<th>Type</th>
+						<th>Entry Price</th>
+						<th>Exit Price</th>
+						<th>Profit</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+		<h2>Compare Strategies</h2>
+		<form id="compare-form">
+			<label for="compare-symbol">Symbol:</label>
+			<input
+				type="text"
+				id="compare-symbol"
+				name="symbol"
+				required /><br /><br />
+			<label for="compare-timeframe">Timeframe:</label>
+			<select
+				id="compare-timeframe"
+				name="timeframe"
+				required>
+				<option value="M1">1 Minute</option>
+				<option value="M5">5 Minutes</option>
+				<option value="M15">15 Minutes</option>
+				<option value="M30">30 Minutes</option>
+				<option value="H1">1 Hour</option>
+				<option value="H4">4 Hours</option>
+				<option value="D1">1 Day</option>
+				<option value="W1">1 Week</option>
+				<option value="MN1">1 Month</option></select
+			><br /><br />
+			<label for="compare-start-date">Start Date:</label>
+			<input
+				type="date"
+				id="compare-start-date"
+				name="start_date"
+				required /><br /><br />
+			<label for="compare-end-date">End Date:</label>
+			<input
+				type="date"
+				id="compare-end-date"
+				name="end_date"
+				required /><br /><br />
+			<label for="compare-initial-balance">Initial Balance:</label>
+			<input
+				type="number"
+				id="compare-initial-balance"
+				name="initial_balance"
+				required /><br /><br />
+			<div id="strategies-to-compare"></div>
 			<button
-				id="stop-bot"
-				style="display: none">
-				Stop Bot
-			</button>
-			<div id="status"></div>
-			<div id="performance">
-				<h3>Performance</h3>
-				<p>Current Balance: $<span id="current-balance"></span></p>
-				<p>Profit/Loss: $<span id="profit-loss"></span></p>
-				<p>Trade Count: <span id="trade-count"></span></p>
-				<p>Win Rate: <span id="win-rate"></span></p>
-			</div>
-			<div id="equity-chart"></div>
-			<div id="drawdown-chart"></div>
-		</div>
-
+				type="button"
+				id="add-strategy">
+				Add Strategy</button
+			><br /><br />
+			<input
+				type="submit"
+				value="Compare Strategies" />
+		</form>
 		<div
-			id="backtesting"
-			class="tab">
-			<h2>Backtesting</h2>
-			<form id="backtest-form">
-				<label for="backtest-symbol">Symbol:</label>
-				<input
-					type="text"
-					id="backtest-symbol"
-					name="symbol"
-					required />
-
-				<label for="backtest-timeframe">Timeframe:</label>
-				<select
-					id="backtest-timeframe"
-					name="timeframe"
-					required>
-					<option value="TIMEFRAME_M1">1 minute</option>
-					<option value="TIMEFRAME_M5">5 minutes</option>
-					<option value="TIMEFRAME_M15">15 minutes</option>
-					<option value="TIMEFRAME_H1">1 hour</option>
-					<option value="TIMEFRAME_H4">4 hours</option>
-					<option value="TIMEFRAME_D1">1 day</option>
-				</select>
-
-				<label for="backtest-start-date">Start Date:</label>
-				<input
-					type="date"
-					id="backtest-start-date"
-					name="start_date"
-					required />
-
-				<label for="backtest-end-date">End Date:</label>
-				<input
-					type="date"
-					id="backtest-end-date"
-					name="end_date"
-					required />
-
-				<label for="backtest-initial-balance">Initial Balance:</label>
-				<input
-					type="number"
-					id="backtest-initial-balance"
-					name="initial_balance"
-					required />
-
-				<label for="backtest-short-period">Short SMA Period:</label>
-				<input
-					type="number"
-					id="backtest-short-period"
-					name="short_period"
-					required />
-
-				<label for="backtest-long-period">Long SMA Period:</label>
-				<input
-					type="number"
-					id="backtest-long-period"
-					name="long_period"
-					required />
-
-				<button type="submit">Run Backtest</button>
-			</form>
-			<div
-				id="backtest-results"
-				style="display: none">
-				<h3>Backtest Results</h3>
-				<p>Sharpe Ratio: <span id="sharpe-ratio"></span></p>
-				<p>Max Drawdown: <span id="max-drawdown"></span></p>
-				<p>Final Balance: <span id="final-balance"></span></p>
-				<div id="backtest-equity-plot"></div>
-				<div id="backtest-drawdown-plot"></div>
-			</div>
+			id="comparison-results"
+			style="display: none">
+			<h3>Comparison Results</h3>
+			<table id="comparison-table"></table>
+			<div id="comparison-equity-curves"></div>
 		</div>
-
+		<h2>Optimize Strategy</h2>
+		<form id="optimize-form">
+			<label for="optimize-strategy">Strategy:</label>
+			<select
+				id="optimize-strategy"
+				name="strategy"
+				required></select
+			><br /><br />
+			<div id="optimize-strategy-params"></div>
+			<label for="optimize-symbol">Symbol:</label>
+			<input
+				type="text"
+				id="optimize-symbol"
+				name="symbol"
+				required /><br /><br />
+			<label for="optimize-timeframe">Timeframe:</label>
+			<select
+				id="optimize-timeframe"
+				name="timeframe"
+				required>
+				<option value="M1">1 Minute</option>
+				<option value="M5">5 Minutes</option>
+				<option value="M15">15 Minutes</option>
+				<option value="M30">30 Minutes</option>
+				<option value="H1">1 Hour</option>
+				<option value="H4">4 Hours</option>
+				<option value="D1">1 Day</option>
+				<option value="W1">1 Week</option>
+				<option value="MN1">1 Month</option></select
+			><br /><br />
+			<label for="optimize-start-date">Start Date:</label>
+			<input
+				type="date"
+				id="optimize-start-date"
+				name="start_date"
+				required /><br /><br />
+			<label for="optimize-end-date">End Date:</label>
+			<input
+				type="date"
+				id="optimize-end-date"
+				name="end_date"
+				required /><br /><br />
+			<label for="optimize-initial-balance">Initial Balance:</label>
+			<input
+				type="number"
+				id="optimize-initial-balance"
+				name="initial_balance"
+				required /><br /><br />
+			<label for="optimize-metric">Optimization Metric:</label>
+			<select
+				id="optimize-metric"
+				name="optimization_metric">
+				<option value="sharpe_ratio">Sharpe Ratio</option>
+				<option value="sortino_ratio">Sortino Ratio</option>
+				<option value="calmar_ratio">Calmar Ratio</option>
+				<option value="profit_factor">Profit Factor</option></select
+			><br /><br />
+			<input
+				type="submit"
+				value="Optimize Strategy" />
+		</form>
+		<div
+			id="optimization-results"
+			style="display: none">
+			<h3>Optimization Results</h3>
+			<p>Best Parameters: <span id="best-params"></span></p>
+			<p>Best Metric Value: <span id="best-metric"></span></p>
+		</div>
+		<h2>Monte Carlo Simulation</h2>
+		<form id="monte-carlo-form">
+			<label for="mc-strategy">Strategy:</label>
+			<select
+				id="mc-strategy"
+				name="strategy"
+				required></select
+			><br /><br />
+			<div id="mc-strategy-params"></div>
+			<label for="mc-symbol">Symbol:</label>
+			<input
+				type="text"
+				id="mc-symbol"
+				name="symbol"
+				required /><br /><br />
+			<label for="mc-timeframe">Timeframe:</label>
+			<select
+				id="mc-timeframe"
+				name="timeframe"
+				required>
+				<option value="M1">1 Minute</option>
+				<option value="M5">5 Minutes</option>
+				<option value="M15">15 Minutes</option>
+				<option value="M30">30 Minutes</option>
+				<option value="H1">1 Hour</option>
+				<option value="H4">4 Hours</option>
+				<option value="D1">1 Day</option>
+				<option value="W1">1 Week</option>
+				<option value="MN1">1 Month</option></select
+			><br /><br />
+			<label for="mc-start-date">Start Date:</label>
+			<input
+				type="date"
+				id="mc-start-date"
+				name="start_date"
+				required /><br /><br />
+			<label for="mc-end-date">End Date:</label>
+			<input
+				type="date"
+				id="mc-end-date"
+				name="end_date"
+				required /><br /><br />
+			<label for="mc-initial-balance">Initial Balance:</label>
+			<input
+				type="number"
+				id="mc-initial-balance"
+				name="initial_balance"
+				required /><br /><br />
+			<label for="mc-num-simulations">Number of Simulations:</label>
+			<input
+				type="number"
+				id="mc-num-simulations"
+				name="num_simulations"
+				value="1000"
+				required /><br /><br />
+			<input
+				type="submit"
+				value="Run Monte Carlo Simulation" />
+		</form>
+		<div
+			id="monte-carlo-results"
+			style="display: none">
+			<h3>Monte Carlo Simulation Results</h3>
+			<div id="mc-metrics"></div>
+			<div id="mc-equity-curves"></div>
+		</div>
 		<script>
-			function openTab(tabName) {
-				var tabs = document.getElementsByClassName('tab');
-				for (var i = 0; i < tabs.length; i++) {
-					tabs[i].style.display = 'none';
-				}
-				document.getElementById(tabName).style.display = 'block';
-			}
-
-			function updateStatus() {
-				$.get('/bot_status', function (data) {
-					$('#status').text('Bot status: ' + data.status);
-					if (data.status === 'running') {
-						$('#start-bot').hide();
-						$('#stop-bot').show();
-					} else {
-						$('#start-bot').show();
-						$('#stop-bot').hide();
-					}
-				});
-			}
-
-			function updateCharts() {
-				$.get('/performance', function (data) {
-					if (data.status === 'success') {
-						$('#current-balance').text(data.current_balance.toFixed(2));
-						$('#profit-loss').text(data.profit_loss.toFixed(2));
-						$('#trade-count').text(data.trade_count);
-						$('#win-rate').text((data.win_rate * 100).toFixed(2) + '%');
-
-						Plotly.newPlot(
-							'equity-chart',
-							[
-								{
-									x: data.timestamps,
-									y: data.equity_curve,
-									type: 'scatter',
-									mode: 'lines',
-									name: 'Equity',
-								},
-							],
-							{ title: 'Equity Curve' },
-						);
-
-						Plotly.newPlot(
-							'drawdown-chart',
-							[
-								{
-									x: data.timestamps,
-									y: data.drawdown,
-									type: 'scatter',
-									mode: 'lines',
-									name: 'Drawdown',
-								},
-							],
-							{ title: 'Drawdown' },
-						);
-					}
-				});
-			}
-
 			$(document).ready(function () {
-				openTab('live-trading');
-
-				updateStatus();
-				setInterval(updateStatus, 5000);
-				setInterval(updateCharts, 60000);
-
-				$('#strategy_type').change(function () {
-					if ($(this).val() === 'SMA') {
-						$('#sma-params').show();
-						$('#rsi-params').hide();
-					} else {
-						$('#sma-params').hide();
-						$('#rsi-params').show();
-					}
-				});
-
-				$('#bot-form').submit(function (e) {
-					e.preventDefault();
-					$.post('/start_bot', $(this).serialize(), function (data) {
-						alert(data.message);
-						updateStatus();
+				// Load available strategies
+				$.get('/strategies', function (data) {
+					var select = $('#strategy, #optimize-strategy, #mc-strategy');
+					$.each(data, function (i, strategy) {
+						select.append(
+							$('<option></option>').val(strategy).html(strategy),
+						);
 					});
 				});
-
-				$('#stop-bot').click(function () {
-					$.post('/stop_bot', function (data) {
-						alert(data.message);
-						updateStatus();
-					});
-				});
-
+				// Load strategy parameters when a strategy is selected
+				$('#strategy, #optimize-strategy, #mc-strategy').change(
+					function () {
+						var strategy = $(this).val();
+						var targetDiv =
+							$(this).attr('id') === 'strategy'
+								? '#strategy-params'
+								: $(this).attr('id') === 'optimize-strategy'
+								? '#optimize-strategy-params'
+								: '#mc-strategy-params';
+						$.get(
+							'/strategy_parameters',
+							{ strategy: strategy },
+							function (data) {
+								var paramsDiv = $(targetDiv);
+								paramsDiv.empty();
+								$.each(data, function (key, value) {
+									if (targetDiv === '#optimize-strategy-params') {
+										paramsDiv.append(
+											$('<label>').text(key + ' Range:'),
+											$('<input>').attr({
+												type: 'number',
+												name: 'param_ranges.' + key + '.start',
+												placeholder: 'Start',
+												required: true,
+											}),
+											$('<input>').attr({
+												type: 'number',
+												name: 'param_ranges.' + key + '.end',
+												placeholder: 'End',
+												required: true,
+											}),
+											$('<input>').attr({
+												type: 'number',
+												name: 'param_ranges.' + key + '.step',
+												placeholder: 'Step',
+												required: true,
+											}),
+											$('<br>'),
+											$('<br>'),
+										);
+									} else {
+										paramsDiv.append(
+											$('<label>').text(key + ':'),
+											$('<input>').attr({
+												type: 'number',
+												name: 'strategy_params.' + key,
+												value: value,
+												required: true,
+											}),
+											$('<br>'),
+											$('<br>'),
+										);
+									}
+								});
+							},
+						);
+					},
+				);
+				// Handle backtest form submission
 				$('#backtest-form').submit(function (e) {
 					e.preventDefault();
-					$.post('/backtest', $(this).serialize(), function (data) {
-						$('#sharpe-ratio').text(data.sharpe_ratio.toFixed(2));
-						$('#max-drawdown').text(
-							(data.max_drawdown * 100).toFixed(2) + '%',
+					var formData = $(this).serializeArray();
+					var jsonData = {};
+					$.each(formData, function () {
+						if (this.name.startsWith('strategy_params.')) {
+							if (!jsonData.strategy_params)
+								jsonData.strategy_params = {};
+							jsonData.strategy_params[this.name.split('.')[1]] =
+								parseFloat(this.value);
+						} else {
+							jsonData[this.name] = this.value;
+						}
+					});
+					$.ajax({
+						url: '/run_backtest',
+						type: 'POST',
+						contentType: 'application/json',
+						data: JSON.stringify(jsonData),
+						success: function (data) {
+							// Update metrics table
+							var metricsTable = $('#metrics-table');
+							metricsTable.empty();
+							$.each(data.metrics, function (key, value) {
+								metricsTable.append(
+									$('<p>').text(key + ': ' + value.toFixed(4)),
+								);
+							});
+							// Update charts
+							Plotly.newPlot(
+								'equity-curve',
+								JSON.parse(data.equity_plot),
+							);
+							Plotly.newPlot(
+								'drawdown-curve',
+								JSON.parse(data.drawdown_plot),
+							);
+							// Update trades table
+							var tradesTable = $('#trades-table tbody');
+							tradesTable.empty();
+							$.each(data.trades, function (i, trade) {
+								tradesTable.append(
+									$('<tr>').append(
+										$('<td>').text(trade.entry_time),
+										$('<td>').text(trade.exit_time),
+										$('<td>').text(trade.type),
+										$('<td>').text(trade.entry_price.toFixed(5)),
+										$('<td>').text(trade.exit_price.toFixed(5)),
+										$('<td>').text(trade.profit.toFixed(2)),
+									),
+								);
+							});
+							$('#backtest-results').show();
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+							alert(
+								'Error running backtest: ' + jqXHR.responseJSON.error,
+							);
+						},
+					});
+				});
+				var strategyCount = 0;
+				$('#add-strategy').click(function () {
+					strategyCount++;
+					var strategyDiv = $('<div>').addClass('strategy-comparison');
+					strategyDiv.append(
+						$('<h4>').text('Strategy ' + strategyCount),
+						$('<select>')
+							.attr({
+								name: 'strategy_' + strategyCount,
+								required: true,
+							})
+							.addClass('strategy-select'),
+						$('<div>').addClass('strategy-params'),
+					);
+					$('#strategies-to-compare').append(strategyDiv);
+					// Populate strategy select
+					var select = strategyDiv.find('.strategy-select');
+					$.get('/strategies', function (data) {
+						$.each(data, function (i, strategy) {
+							select.append(
+								$('<option></option>').val(strategy).html(strategy),
+							);
+						});
+					});
+					// Handle strategy selection
+					select.change(function () {
+						var strategy = $(this).val();
+						var paramsDiv = $(this).siblings('.strategy-params');
+						$.get(
+							'/strategy_parameters',
+							{ strategy: strategy },
+							function (data) {
+								paramsDiv.empty();
+								$.each(data, function (key, value) {
+									paramsDiv.append(
+										$('<label>').text(key + ':'),
+										$('<input>').attr({
+											type: 'number',
+											name:
+												'strategy_' +
+												strategyCount +
+												'_params.' +
+												key,
+											value: value,
+											required: true,
+										}),
+										$('<br>'),
+									);
+								});
+							},
 						);
-						$('#final-balance').text('$' + data.final_balance.toFixed(2));
-
-						Plotly.newPlot(
-							'backtest-equity-plot',
-							JSON.parse(data.equity_plot),
+					});
+				});
+				$('#compare-form').submit(function (e) {
+					e.preventDefault();
+					var formData = $(this).serializeArray();
+					var jsonData = {
+						backtest_params: {},
+						strategies_to_compare: {},
+					};
+					$.each(formData, function () {
+						if (this.name.includes('_params.')) {
+							var parts = this.name.split('_params.');
+							var strategyName = parts[0];
+							var paramName = parts[1];
+							if (!jsonData.strategies_to_compare[strategyName]) {
+								jsonData.strategies_to_compare[strategyName] = {};
+							}
+							jsonData.strategies_to_compare[strategyName][paramName] =
+								parseFloat(this.value);
+						} else if (this.name.startsWith('strategy_')) {
+							jsonData.strategies_to_compare[this.name] = {};
+						} else {
+							jsonData.backtest_params[this.name] = this.value;
+						}
+					});
+					$.ajax({
+						url: '/compare_strategies',
+						type: 'POST',
+						contentType: 'application/json',
+						data: JSON.stringify(jsonData),
+						success: function (data) {
+							// Create comparison table
+							var table = $('#comparison-table');
+							table.empty();
+							var headerRow = $('<tr>');
+							headerRow.append($('<th>').text('Metric'));
+							$.each(data.comparison, function (strategy, _) {
+								headerRow.append($('<th>').text(strategy));
+							});
+							table.append(headerRow);
+							$.each(
+								data.comparison[Object.keys(data.comparison)[0]],
+								function (metric, _) {
+									var row = $('<tr>');
+									row.append($('<td>').text(metric));
+									$.each(
+										data.comparison,
+										function (strategy, metrics) {
+											row.append(
+												$('<td>').text(metrics[metric].toFixed(2)),
+											);
+										},
+									);
+									table.append(row);
+								},
+							);
+							// Create equity curve comparison plot
+							var equityCurves = [];
+							$.each(data.results, function (strategy, result) {
+								equityCurves.push({
+									x: Object.keys(result.equity_curve),
+									y: Object.values(result.equity_curve),
+									type: 'scatter',
+									mode: 'lines',
+									name: strategy,
+								});
+							});
+							Plotly.newPlot('comparison-equity-curves', equityCurves, {
+								title: 'Equity Curves Comparison',
+								xaxis: { title: 'Date' },
+								yaxis: { title: 'Equity' },
+							});
+							$('#comparison-results').show();
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+							alert(
+								'Error comparing strategies: ' +
+									jqXHR.responseJSON.error,
+							);
+						},
+					});
+				});
+				// Handle optimization form submission
+				$('#optimize-form').submit(function (e) {
+					e.preventDefault();
+					var formData = $(this).serializeArray();
+					var jsonData = {};
+					$.each(formData, function () {
+						if (this.name.startsWith('param_ranges.')) {
+							var parts = this.name.split('.');
+							if (!jsonData.param_ranges) jsonData.param_ranges = {};
+							if (!jsonData.param_ranges[parts[1]])
+								jsonData.param_ranges[parts[1]] = {};
+							jsonData.param_ranges[parts[1]][parts[2]] = parseFloat(
+								this.value,
+							);
+						} else {
+							jsonData[this.name] = this.value;
+						}
+					});
+					// Convert param ranges to arrays
+					$.each(jsonData.param_ranges, function (key, range) {
+						jsonData.param_ranges[key] = Array.from(
+							{ length: (range.end - range.start) / range.step + 1 },
+							(_, i) => range.start + i * range.step,
 						);
-						Plotly.newPlot(
-							'backtest-drawdown-plot',
-							JSON.parse(data.drawdown_plot),
-						);
-
-						$('#backtest-results').show();
+					});
+					$.ajax({
+						url: '/optimize_strategy',
+						type: 'POST',
+						contentType: 'application/json',
+						data: JSON.stringify(jsonData),
+						success: function (data) {
+							$('#best-params').text(
+								JSON.stringify(data.best_params, null, 2),
+							);
+							$('#best-metric').text(data.best_metric.toFixed(4));
+							$('#optimization-results').show();
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+							alert(
+								'Error optimizing strategy: ' +
+									jqXHR.responseJSON.error,
+							);
+						},
+					});
+				});
+				// Handle Monte Carlo simulation form submission
+				$('#monte-carlo-form').submit(function (e) {
+					e.preventDefault();
+					var formData = $(this).serializeArray();
+					var jsonData = {};
+					$.each(formData, function () {
+						if (this.name.startsWith('strategy_params.')) {
+							if (!jsonData.strategy_params)
+								jsonData.strategy_params = {};
+							jsonData.strategy_params[this.name.split('.')[1]] =
+								parseFloat(this.value);
+						} else {
+							jsonData[this.name] = this.value;
+						}
+					});
+					$.ajax({
+						url: '/run_monte_carlo',
+						type: 'POST',
+						contentType: 'application/json',
+						data: JSON.stringify(jsonData),
+						success: function (data) {
+							// Display Monte Carlo metrics
+							var metricsDiv = $('#mc-metrics');
+							metricsDiv.empty();
+							$.each(data.mc_results, function (key, value) {
+								metricsDiv.append(
+									$('<p>').text(key + ': ' + value.toFixed(4)),
+								);
+							});
+							// Plot Monte Carlo equity curves
+							var equityCurves = data.simulated_equity_curves.map(
+								function (curve, i) {
+									return {
+										y: curve,
+										type: 'scatter',
+										mode: 'lines',
+										name: 'Simulation ' + (i + 1),
+										opacity: 0.1,
+									};
+								},
+							);
+							Plotly.newPlot('mc-equity-curves', equityCurves, {
+								title: 'Monte Carlo Simulations',
+								xaxis: { title: 'Trade Number' },
+								yaxis: { title: 'Equity' },
+							});
+							$('#monte-carlo-results').show();
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+							alert(
+								'Error running Monte Carlo simulation: ' +
+									jqXHR.responseJSON.error,
+							);
+						},
 					});
 				});
 			});

@@ -1,4 +1,4 @@
-# src\RAD_trading\strategies\base_strategy.py
+# src/RAD_trading/strategies/base_strategy.py
 from abc import ABC, abstractmethod
 class BaseStrategy(ABC):
     def __init__(self, symbol, timeframe):
@@ -8,5 +8,8 @@ class BaseStrategy(ABC):
     def generate_signal(self, data):
         pass
     @abstractmethod
-    def on_bar(self, data, trades, orders):
+    def get_parameters(self):
+        pass
+    @abstractmethod
+    def set_parameters(self, params):
         pass
