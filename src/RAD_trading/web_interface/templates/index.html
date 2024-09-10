@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- src\RAD_trading\web_interface\templates\index.html -->
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
@@ -7,388 +6,756 @@
 			name="viewport"
 			content="width=device-width, initial-scale=1.0" />
 		<title>RAD Trading Backtesting Interface</title>
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+			rel="stylesheet" />
+		<link
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+			rel="stylesheet" />
 		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 		<style>
 			body {
-				font-family: Arial, sans-serif;
-				line-height: 1.6;
-				padding: 20px;
+				font-family: 'Roboto', sans-serif;
+				background-color: #f8f9fa;
 			}
-			h1,
-			h2,
-			h3 {
-				color: #333;
-			}
-			form {
+			.card {
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+				transition: 0.3s;
 				margin-bottom: 20px;
 			}
-			label {
-				display: inline-block;
-				width: 150px;
+			.card:hover {
+				box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 			}
-			input,
-			select {
-				margin-bottom: 10px;
-			}
-			table {
-				border-collapse: collapse;
-				width: 100%;
-			}
-			th,
-			td {
-				border: 1px solid #ddd;
-				padding: 8px;
-				text-align: left;
-			}
-			th {
-				background-color: #f2f2f2;
+			.nav-pills .nav-link.active {
+				background-color: #007bff;
 			}
 		</style>
 	</head>
 	<body>
-		<h1>RAD Trading Backtesting Interface</h1>
-		<h2>Run Backtest</h2>
-		<form id="backtest-form">
-			<label for="strategy">Strategy:</label>
-			<select
-				id="strategy"
-				name="strategy"
-				required></select
-			><br /><br />
-			<div id="strategy-params"></div>
-			<label for="symbol">Symbol:</label>
-			<input
-				type="text"
-				id="symbol"
-				name="symbol"
-				required /><br /><br />
-			<label for="timeframe">Timeframe:</label>
-			<select
-				id="timeframe"
-				name="timeframe"
-				required>
-				<option value="M1">1 Minute</option>
-				<option value="M5">5 Minutes</option>
-				<option value="M15">15 Minutes</option>
-				<option value="M30">30 Minutes</option>
-				<option value="H1">1 Hour</option>
-				<option value="H4">4 Hours</option>
-				<option value="D1">1 Day</option>
-				<option value="W1">1 Week</option>
-				<option value="MN1">1 Month</option></select
-			><br /><br />
-			<label for="start_date">Start Date:</label>
-			<input
-				type="date"
-				id="start_date"
-				name="start_date"
-				required /><br /><br />
-			<label for="end_date">End Date:</label>
-			<input
-				type="date"
-				id="end_date"
-				name="end_date"
-				required /><br /><br />
-			<label for="initial_balance">Initial Balance:</label>
-			<input
-				type="number"
-				id="initial_balance"
-				name="initial_balance"
-				required /><br /><br />
-			<input
-				type="submit"
-				value="Run Backtest" />
-		</form>
-		<div
-			id="backtest-results"
-			style="display: none">
-			<h3>Backtest Results</h3>
-			<div id="metrics-table"></div>
-			<div id="equity-curve"></div>
-			<div id="drawdown-curve"></div>
-			<h4>Trades</h4>
-			<table id="trades-table">
-				<thead>
-					<tr>
-						<th>Entry Time</th>
-						<th>Exit Time</th>
-						<th>Type</th>
-						<th>Entry Price</th>
-						<th>Exit Price</th>
-						<th>Profit</th>
-					</tr>
-				</thead>
-				<tbody></tbody>
-			</table>
+		<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+			<div class="container">
+				<a
+					class="navbar-brand"
+					href="#"
+					>RAD Trading Backtesting Interface</a
+				>
+			</div>
+		</nav>
+
+		<div class="container mt-4">
+			<ul
+				class="nav nav-pills mb-3"
+				id="pills-tab"
+				role="tablist">
+				<li
+					class="nav-item"
+					role="presentation">
+					<button
+						class="nav-link active"
+						id="pills-backtest-tab"
+						data-bs-toggle="pill"
+						data-bs-target="#pills-backtest"
+						type="button"
+						role="tab">
+						Backtest
+					</button>
+				</li>
+				<li
+					class="nav-item"
+					role="presentation">
+					<button
+						class="nav-link"
+						id="pills-compare-tab"
+						data-bs-toggle="pill"
+						data-bs-target="#pills-compare"
+						type="button"
+						role="tab">
+						Compare
+					</button>
+				</li>
+				<li
+					class="nav-item"
+					role="presentation">
+					<button
+						class="nav-link"
+						id="pills-optimize-tab"
+						data-bs-toggle="pill"
+						data-bs-target="#pills-optimize"
+						type="button"
+						role="tab">
+						Optimize
+					</button>
+				</li>
+				<li
+					class="nav-item"
+					role="presentation">
+					<button
+						class="nav-link"
+						id="pills-monte-carlo-tab"
+						data-bs-toggle="pill"
+						data-bs-target="#pills-monte-carlo"
+						type="button"
+						role="tab">
+						Monte Carlo
+					</button>
+				</li>
+			</ul>
+
+			<div
+				class="tab-content"
+				id="pills-tabContent">
+				<!-- Backtest Tab -->
+				<div
+					class="tab-pane fade show active"
+					id="pills-backtest"
+					role="tabpanel">
+					<div class="card">
+						<div class="card-body">
+							<h5 class="card-title">Run Backtest</h5>
+							<form id="backtest-form">
+								<div class="mb-3">
+									<label
+										for="strategy"
+										class="form-label"
+										>Strategy:</label
+									>
+									<select
+										id="strategy"
+										name="strategy"
+										class="form-select"
+										required></select>
+								</div>
+								<div id="strategy-params"></div>
+								<div class="mb-3">
+									<label
+										for="symbol"
+										class="form-label"
+										>Symbol:</label
+									>
+									<input
+										type="text"
+										id="symbol"
+										name="symbol"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="timeframe"
+										class="form-label"
+										>Timeframe:</label
+									>
+									<input
+										type="text"
+										id="timeframe"
+										name="timeframe"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="start_date"
+										class="form-label"
+										>Start Date:</label
+									>
+									<input
+										type="date"
+										id="start_date"
+										name="start_date"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="end_date"
+										class="form-label"
+										>End Date:</label
+									>
+									<input
+										type="date"
+										id="end_date"
+										name="end_date"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="initial_balance"
+										class="form-label"
+										>Initial Balance:</label
+									>
+									<input
+										type="number"
+										id="initial_balance"
+										name="initial_balance"
+										class="form-control"
+										required />
+								</div>
+								<button
+									type="submit"
+									class="btn btn-primary">
+									Run Backtest
+								</button>
+							</form>
+						</div>
+					</div>
+
+					<div
+						id="backtest-results"
+						style="display: none">
+						<h3>Backtest Results</h3>
+						<div class="row">
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Metrics</h5>
+										<div id="metrics-table"></div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Equity Curve</h5>
+										<div id="equity-curve"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-4">
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Drawdown Curve</h5>
+										<div id="drawdown-curve"></div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">Trades</h5>
+										<div class="table-responsive">
+											<table
+												id="trades-table"
+												class="table table-striped">
+												<thead>
+													<tr>
+														<th>Entry Time</th>
+														<th>Exit Time</th>
+														<th>Type</th>
+														<th>Entry Price</th>
+														<th>Exit Price</th>
+														<th>Profit</th>
+													</tr>
+												</thead>
+												<tbody></tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Compare Tab -->
+				<div
+					class="tab-pane fade"
+					id="pills-compare"
+					role="tabpanel">
+					<div class="card">
+						<div class="card-body">
+							<h5 class="card-title">Compare Strategies</h5>
+							<form id="compare-form">
+								<div class="mb-3">
+									<label
+										for="compare-symbol"
+										class="form-label"
+										>Symbol:</label
+									>
+									<input
+										type="text"
+										id="compare-symbol"
+										name="symbol"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="compare-timeframe"
+										class="form-label"
+										>Timeframe:</label
+									>
+									<input
+										type="text"
+										id="compare-timeframe"
+										name="timeframe"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="compare-start-date"
+										class="form-label"
+										>Start Date:</label
+									>
+									<input
+										type="date"
+										id="compare-start-date"
+										name="start_date"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="compare-end-date"
+										class="form-label"
+										>End Date:</label
+									>
+									<input
+										type="date"
+										id="compare-end-date"
+										name="end_date"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="compare-initial-balance"
+										class="form-label"
+										>Initial Balance:</label
+									>
+									<input
+										type="number"
+										id="compare-initial-balance"
+										name="initial_balance"
+										class="form-control"
+										required />
+								</div>
+								<div id="strategies-to-compare"></div>
+								<button
+									type="button"
+									id="add-strategy"
+									class="btn btn-secondary mb-3">
+									Add Strategy
+								</button>
+								<button
+									type="submit"
+									class="btn btn-primary">
+									Compare Strategies
+								</button>
+							</form>
+						</div>
+					</div>
+
+					<div
+						id="comparison-results"
+						style="display: none">
+						<h3>Comparison Results</h3>
+						<div class="card">
+							<div class="card-body">
+								<h5 class="card-title">Metrics Comparison</h5>
+								<div class="table-responsive">
+									<table
+										id="comparison-table"
+										class="table table-striped"></table>
+								</div>
+							</div>
+						</div>
+						<div class="card mt-4">
+							<div class="card-body">
+								<h5 class="card-title">Equity Curves Comparison</h5>
+								<div id="comparison-equity-curves"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Optimize Tab -->
+				<div
+					class="tab-pane fade"
+					id="pills-optimize"
+					role="tabpanel">
+					<div class="card">
+						<div class="card-body">
+							<h5 class="card-title">Optimize Strategy</h5>
+							<form id="optimize-form">
+								<div class="mb-3">
+									<label
+										for="optimize-strategy"
+										class="form-label"
+										>Strategy:</label
+									>
+									<select
+										id="optimize-strategy"
+										name="strategy"
+										class="form-select"
+										required></select>
+								</div>
+								<div id="optimize-strategy-params"></div>
+								<div class="mb-3">
+									<label
+										for="optimize-symbol"
+										class="form-label"
+										>Symbol:</label
+									>
+									<input
+										type="text"
+										id="optimize-symbol"
+										name="symbol"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="optimize-timeframe"
+										class="form-label"
+										>Timeframe:</label
+									>
+									<input
+										type="text"
+										id="optimize-timeframe"
+										name="timeframe"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="optimize-start-date"
+										class="form-label"
+										>Start Date:</label
+									>
+									<input
+										type="date"
+										id="optimize-start-date"
+										name="start_date"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="optimize-end-date"
+										class="form-label"
+										>End Date:</label
+									>
+									<input
+										type="date"
+										id="optimize-end-date"
+										name="end_date"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="optimize-initial-balance"
+										class="form-label"
+										>Initial Balance:</label
+									>
+									<input
+										type="number"
+										id="optimize-initial-balance"
+										name="initial_balance"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="optimize-metric"
+										class="form-label"
+										>Optimization Metric:</label
+									>
+									<select
+										id="optimize-metric"
+										name="optimization_metric"
+										class="form-select">
+										<option value="sharpe_ratio">Sharpe Ratio</option>
+										<option value="sortino_ratio">
+											Sortino Ratio
+										</option>
+										<option value="calmar_ratio">Calmar Ratio</option>
+										<option value="profit_factor">
+											Profit Factor
+										</option>
+									</select>
+								</div>
+								<button
+									type="submit"
+									class="btn btn-primary">
+									Optimize Strategy
+								</button>
+							</form>
+						</div>
+					</div>
+
+					<div
+						id="optimization-results"
+						style="display: none">
+						<h3>Optimization Results</h3>
+						<div class="card">
+							<div class="card-body">
+								<h5 class="card-title">Best Parameters</h5>
+								<pre id="best-params"></pre>
+								<h5 class="card-title mt-3">Best Metric Value</h5>
+								<p id="best-metric"></p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Monte Carlo Tab -->
+				<div
+					class="tab-pane fade"
+					id="pills-monte-carlo"
+					role="tabpanel">
+					<div class="card">
+						<div class="card-body">
+							<h5 class="card-title">Monte Carlo Simulation</h5>
+							<form id="monte-carlo-form">
+								<div class="mb-3">
+									<label
+										for="mc-strategy"
+										class="form-label"
+										>Strategy:</label
+									>
+									<select
+										id="mc-strategy"
+										name="strategy"
+										class="form-select"
+										required></select>
+								</div>
+								<div id="mc-strategy-params"></div>
+								<div class="mb-3">
+									<label
+										for="mc-symbol"
+										class="form-label"
+										>Symbol:</label
+									>
+									<input
+										type="text"
+										id="mc-symbol"
+										name="symbol"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="mc-timeframe"
+										class="form-label"
+										>Timeframe:</label
+									>
+									<input
+										type="text"
+										id="mc-timeframe"
+										name="timeframe"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="mc-start-date"
+										class="form-label"
+										>Start Date:</label
+									>
+									<input
+										type="date"
+										id="mc-start-date"
+										name="start_date"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="mc-end-date"
+										class="form-label"
+										>End Date:</label
+									>
+									<input
+										type="date"
+										id="mc-end-date"
+										name="end_date"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="mc-initial-balance"
+										class="form-label"
+										>Initial Balance:</label
+									>
+									<input
+										type="number"
+										id="mc-initial-balance"
+										name="initial_balance"
+										class="form-control"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
+										for="mc-num-simulations"
+										class="form-label"
+										>Number of Simulations:</label
+									>
+									<input
+										type="number"
+										id="mc-num-simulations"
+										name="num_simulations"
+										value="1000"
+										class="form-control"
+										required />
+								</div>
+								<button
+									type="submit"
+									class="btn btn-primary">
+									Run Monte Carlo Simulation
+								</button>
+							</form>
+						</div>
+					</div>
+
+					<div
+						id="monte-carlo-results"
+						style="display: none">
+						<h3>Monte Carlo Simulation Results</h3>
+						<div class="card">
+							<div class="card-body">
+								<h5 class="card-title">Simulation Metrics</h5>
+								<div id="mc-metrics"></div>
+							</div>
+						</div>
+						<div class="card mt-4">
+							<div class="card-body">
+								<h5 class="card-title">Equity Curves</h5>
+								<div id="mc-equity-curves"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
-		<h2>Compare Strategies</h2>
-		<form id="compare-form">
-			<label for="compare-symbol">Symbol:</label>
-			<input
-				type="text"
-				id="compare-symbol"
-				name="symbol"
-				required /><br /><br />
-			<label for="compare-timeframe">Timeframe:</label>
-			<select
-				id="compare-timeframe"
-				name="timeframe"
-				required>
-				<option value="M1">1 Minute</option>
-				<option value="M5">5 Minutes</option>
-				<option value="M15">15 Minutes</option>
-				<option value="M30">30 Minutes</option>
-				<option value="H1">1 Hour</option>
-				<option value="H4">4 Hours</option>
-				<option value="D1">1 Day</option>
-				<option value="W1">1 Week</option>
-				<option value="MN1">1 Month</option></select
-			><br /><br />
-			<label for="compare-start-date">Start Date:</label>
-			<input
-				type="date"
-				id="compare-start-date"
-				name="start_date"
-				required /><br /><br />
-			<label for="compare-end-date">End Date:</label>
-			<input
-				type="date"
-				id="compare-end-date"
-				name="end_date"
-				required /><br /><br />
-			<label for="compare-initial-balance">Initial Balance:</label>
-			<input
-				type="number"
-				id="compare-initial-balance"
-				name="initial_balance"
-				required /><br /><br />
-			<div id="strategies-to-compare"></div>
-			<button
-				type="button"
-				id="add-strategy">
-				Add Strategy</button
-			><br /><br />
-			<input
-				type="submit"
-				value="Compare Strategies" />
-		</form>
-		<div
-			id="comparison-results"
-			style="display: none">
-			<h3>Comparison Results</h3>
-			<table id="comparison-table"></table>
-			<div id="comparison-equity-curves"></div>
-		</div>
-		<h2>Optimize Strategy</h2>
-		<form id="optimize-form">
-			<label for="optimize-strategy">Strategy:</label>
-			<select
-				id="optimize-strategy"
-				name="strategy"
-				required></select
-			><br /><br />
-			<div id="optimize-strategy-params"></div>
-			<label for="optimize-symbol">Symbol:</label>
-			<input
-				type="text"
-				id="optimize-symbol"
-				name="symbol"
-				required /><br /><br />
-			<label for="optimize-timeframe">Timeframe:</label>
-			<select
-				id="optimize-timeframe"
-				name="timeframe"
-				required>
-				<option value="M1">1 Minute</option>
-				<option value="M5">5 Minutes</option>
-				<option value="M15">15 Minutes</option>
-				<option value="M30">30 Minutes</option>
-				<option value="H1">1 Hour</option>
-				<option value="H4">4 Hours</option>
-				<option value="D1">1 Day</option>
-				<option value="W1">1 Week</option>
-				<option value="MN1">1 Month</option></select
-			><br /><br />
-			<label for="optimize-start-date">Start Date:</label>
-			<input
-				type="date"
-				id="optimize-start-date"
-				name="start_date"
-				required /><br /><br />
-			<label for="optimize-end-date">End Date:</label>
-			<input
-				type="date"
-				id="optimize-end-date"
-				name="end_date"
-				required /><br /><br />
-			<label for="optimize-initial-balance">Initial Balance:</label>
-			<input
-				type="number"
-				id="optimize-initial-balance"
-				name="initial_balance"
-				required /><br /><br />
-			<label for="optimize-metric">Optimization Metric:</label>
-			<select
-				id="optimize-metric"
-				name="optimization_metric">
-				<option value="sharpe_ratio">Sharpe Ratio</option>
-				<option value="sortino_ratio">Sortino Ratio</option>
-				<option value="calmar_ratio">Calmar Ratio</option>
-				<option value="profit_factor">Profit Factor</option></select
-			><br /><br />
-			<input
-				type="submit"
-				value="Optimize Strategy" />
-		</form>
-		<div
-			id="optimization-results"
-			style="display: none">
-			<h3>Optimization Results</h3>
-			<p>Best Parameters: <span id="best-params"></span></p>
-			<p>Best Metric Value: <span id="best-metric"></span></p>
-		</div>
-		<h2>Monte Carlo Simulation</h2>
-		<form id="monte-carlo-form">
-			<label for="mc-strategy">Strategy:</label>
-			<select
-				id="mc-strategy"
-				name="strategy"
-				required></select
-			><br /><br />
-			<div id="mc-strategy-params"></div>
-			<label for="mc-symbol">Symbol:</label>
-			<input
-				type="text"
-				id="mc-symbol"
-				name="symbol"
-				required /><br /><br />
-			<label for="mc-timeframe">Timeframe:</label>
-			<select
-				id="mc-timeframe"
-				name="timeframe"
-				required>
-				<option value="M1">1 Minute</option>
-				<option value="M5">5 Minutes</option>
-				<option value="M15">15 Minutes</option>
-				<option value="M30">30 Minutes</option>
-				<option value="H1">1 Hour</option>
-				<option value="H4">4 Hours</option>
-				<option value="D1">1 Day</option>
-				<option value="W1">1 Week</option>
-				<option value="MN1">1 Month</option></select
-			><br /><br />
-			<label for="mc-start-date">Start Date:</label>
-			<input
-				type="date"
-				id="mc-start-date"
-				name="start_date"
-				required /><br /><br />
-			<label for="mc-end-date">End Date:</label>
-			<input
-				type="date"
-				id="mc-end-date"
-				name="end_date"
-				required /><br /><br />
-			<label for="mc-initial-balance">Initial Balance:</label>
-			<input
-				type="number"
-				id="mc-initial-balance"
-				name="initial_balance"
-				required /><br /><br />
-			<label for="mc-num-simulations">Number of Simulations:</label>
-			<input
-				type="number"
-				id="mc-num-simulations"
-				name="num_simulations"
-				value="1000"
-				required /><br /><br />
-			<input
-				type="submit"
-				value="Run Monte Carlo Simulation" />
-		</form>
-		<div
-			id="monte-carlo-results"
-			style="display: none">
-			<h3>Monte Carlo Simulation Results</h3>
-			<div id="mc-metrics"></div>
-			<div id="mc-equity-curves"></div>
-		</div>
+
 		<script>
 			$(document).ready(function () {
 				// Load available strategies
-				$.get('/strategies', function (data) {
-					var select = $('#strategy, #optimize-strategy, #mc-strategy');
-					$.each(data, function (i, strategy) {
-						select.append(
-							$('<option></option>').val(strategy).html(strategy),
-						);
+				function loadStrategies(selectElement) {
+					$.get('/strategies', function (data) {
+						selectElement.empty();
+						$.each(data, function (i, strategy) {
+							selectElement.append(
+								$('<option></option>').val(strategy).html(strategy),
+							);
+						});
+						selectElement.trigger('change');
 					});
-				});
+				}
+
+				loadStrategies($('#strategy'));
+				loadStrategies($('#optimize-strategy'));
+				loadStrategies($('#mc-strategy'));
+
 				// Load strategy parameters when a strategy is selected
-				$('#strategy, #optimize-strategy, #mc-strategy').change(
-					function () {
-						var strategy = $(this).val();
-						var targetDiv =
-							$(this).attr('id') === 'strategy'
-								? '#strategy-params'
-								: $(this).attr('id') === 'optimize-strategy'
-								? '#optimize-strategy-params'
-								: '#mc-strategy-params';
-						$.get(
-							'/strategy_parameters',
-							{ strategy: strategy },
-							function (data) {
-								var paramsDiv = $(targetDiv);
-								paramsDiv.empty();
-								$.each(data, function (key, value) {
-									if (targetDiv === '#optimize-strategy-params') {
-										paramsDiv.append(
-											$('<label>').text(key + ' Range:'),
-											$('<input>').attr({
-												type: 'number',
-												name: 'param_ranges.' + key + '.start',
-												placeholder: 'Start',
-												required: true,
-											}),
-											$('<input>').attr({
-												type: 'number',
-												name: 'param_ranges.' + key + '.end',
-												placeholder: 'End',
-												required: true,
-											}),
-											$('<input>').attr({
-												type: 'number',
-												name: 'param_ranges.' + key + '.step',
-												placeholder: 'Step',
-												required: true,
-											}),
-											$('<br>'),
-											$('<br>'),
-										);
-									} else {
-										paramsDiv.append(
-											$('<label>').text(key + ':'),
-											$('<input>').attr({
-												type: 'number',
-												name: 'strategy_params.' + key,
-												value: value,
-												required: true,
-											}),
-											$('<br>'),
-											$('<br>'),
-										);
-									}
-								});
-							},
-						);
-					},
-				);
+				function loadStrategyParams(strategySelect, paramsDiv) {
+					var strategy = strategySelect.val();
+					$.get(
+						'/strategy_parameters',
+						{ strategy: strategy },
+						function (data) {
+							paramsDiv.empty();
+							$.each(data, function (key, value) {
+								paramsDiv.append(
+									$('<div>')
+										.addClass('mb-3')
+										.append(
+											$('<label>')
+												.addClass('form-label')
+												.text(key + ':'),
+											$('<input>')
+												.attr({
+													type: 'number',
+													name: 'strategy_params.' + key,
+													value: value,
+													required: true,
+												})
+												.addClass('form-control'),
+										),
+								);
+							});
+						},
+					);
+				}
+
+				$('#strategy').change(function () {
+					loadStrategyParams($(this), $('#strategy-params'));
+				});
+
+				$('#optimize-strategy').change(function () {
+					var strategy = $(this).val();
+					$.get(
+						'/strategy_parameters',
+						{ strategy: strategy },
+						function (data) {
+							var paramsDiv = $('#optimize-strategy-params');
+							paramsDiv.empty();
+							$.each(data, function (key, value) {
+								paramsDiv.append(
+									$('<div>')
+										.addClass('mb-3')
+										.append(
+											$('<label>')
+												.addClass('form-label')
+												.text(key + ' Range:'),
+											$('<div>')
+												.addClass('input-group')
+												.append(
+													$('<input>')
+														.attr({
+															type: 'number',
+															name:
+																'param_ranges.' +
+																key +
+																'.start',
+															placeholder: 'Start',
+															required: true,
+														})
+														.addClass('form-control'),
+													$('<input>')
+														.attr({
+															type: 'number',
+															name:
+																'param_ranges.' + key + '.end',
+															placeholder: 'End',
+															required: true,
+														})
+														.addClass('form-control'),
+													$('<input>')
+														.attr({
+															type: 'number',
+															name:
+																'param_ranges.' + key + '.step',
+															placeholder: 'Step',
+															required: true,
+														})
+														.addClass('form-control'),
+												),
+										),
+								);
+							});
+						},
+					);
+				});
+
+				$('#mc-strategy').change(function () {
+					loadStrategyParams($(this), $('#mc-strategy-params'));
+				});
+
 				// Handle backtest form submission
 				$('#backtest-form').submit(function (e) {
 					e.preventDefault();
 					var formData = $(this).serializeArray();
 					var jsonData = {};
+
 					$.each(formData, function () {
 						if (this.name.startsWith('strategy_params.')) {
 							if (!jsonData.strategy_params)
@@ -399,6 +766,7 @@
 							jsonData[this.name] = this.value;
 						}
 					});
+
 					$.ajax({
 						url: '/run_backtest',
 						type: 'POST',
@@ -413,6 +781,7 @@
 									$('<p>').text(key + ': ' + value.toFixed(4)),
 								);
 							});
+
 							// Update charts
 							Plotly.newPlot(
 								'equity-curve',
@@ -422,6 +791,7 @@
 								'drawdown-curve',
 								JSON.parse(data.drawdown_plot),
 							);
+
 							// Update trades table
 							var tradesTable = $('#trades-table tbody');
 							tradesTable.empty();
@@ -437,6 +807,7 @@
 									),
 								);
 							});
+
 							$('#backtest-results').show();
 						},
 						error: function (jqXHR, textStatus, errorThrown) {
@@ -446,59 +817,38 @@
 						},
 					});
 				});
+
+				// Handle compare form submission
 				var strategyCount = 0;
+
 				$('#add-strategy').click(function () {
 					strategyCount++;
-					var strategyDiv = $('<div>').addClass('strategy-comparison');
+					var strategyDiv = $('<div>').addClass(
+						'strategy-comparison mb-3',
+					);
 					strategyDiv.append(
-						$('<h4>').text('Strategy ' + strategyCount),
+						$('<h6>').text('Strategy ' + strategyCount),
 						$('<select>')
 							.attr({
 								name: 'strategy_' + strategyCount,
 								required: true,
 							})
-							.addClass('strategy-select'),
+							.addClass('form-select strategy-select mb-2'),
 						$('<div>').addClass('strategy-params'),
 					);
 					$('#strategies-to-compare').append(strategyDiv);
-					// Populate strategy select
+
 					var select = strategyDiv.find('.strategy-select');
-					$.get('/strategies', function (data) {
-						$.each(data, function (i, strategy) {
-							select.append(
-								$('<option></option>').val(strategy).html(strategy),
-							);
-						});
-					});
-					// Handle strategy selection
+					loadStrategies(select);
+
 					select.change(function () {
-						var strategy = $(this).val();
-						var paramsDiv = $(this).siblings('.strategy-params');
-						$.get(
-							'/strategy_parameters',
-							{ strategy: strategy },
-							function (data) {
-								paramsDiv.empty();
-								$.each(data, function (key, value) {
-									paramsDiv.append(
-										$('<label>').text(key + ':'),
-										$('<input>').attr({
-											type: 'number',
-											name:
-												'strategy_' +
-												strategyCount +
-												'_params.' +
-												key,
-											value: value,
-											required: true,
-										}),
-										$('<br>'),
-									);
-								});
-							},
+						loadStrategyParams(
+							$(this),
+							$(this).siblings('.strategy-params'),
 						);
 					});
 				});
+
 				$('#compare-form').submit(function (e) {
 					e.preventDefault();
 					var formData = $(this).serializeArray();
@@ -506,6 +856,7 @@
 						backtest_params: {},
 						strategies_to_compare: {},
 					};
+
 					$.each(formData, function () {
 						if (this.name.includes('_params.')) {
 							var parts = this.name.split('_params.');
@@ -522,6 +873,7 @@
 							jsonData.backtest_params[this.name] = this.value;
 						}
 					});
+
 					$.ajax({
 						url: '/compare_strategies',
 						type: 'POST',
@@ -537,6 +889,7 @@
 								headerRow.append($('<th>').text(strategy));
 							});
 							table.append(headerRow);
+
 							$.each(
 								data.comparison[Object.keys(data.comparison)[0]],
 								function (metric, _) {
@@ -553,6 +906,7 @@
 									table.append(row);
 								},
 							);
+
 							// Create equity curve comparison plot
 							var equityCurves = [];
 							$.each(data.results, function (strategy, result) {
@@ -569,6 +923,7 @@
 								xaxis: { title: 'Date' },
 								yaxis: { title: 'Equity' },
 							});
+
 							$('#comparison-results').show();
 						},
 						error: function (jqXHR, textStatus, errorThrown) {
@@ -579,11 +934,13 @@
 						},
 					});
 				});
+
 				// Handle optimization form submission
 				$('#optimize-form').submit(function (e) {
 					e.preventDefault();
 					var formData = $(this).serializeArray();
 					var jsonData = {};
+
 					$.each(formData, function () {
 						if (this.name.startsWith('param_ranges.')) {
 							var parts = this.name.split('.');
@@ -597,6 +954,7 @@
 							jsonData[this.name] = this.value;
 						}
 					});
+
 					// Convert param ranges to arrays
 					$.each(jsonData.param_ranges, function (key, range) {
 						jsonData.param_ranges[key] = Array.from(
@@ -604,6 +962,7 @@
 							(_, i) => range.start + i * range.step,
 						);
 					});
+
 					$.ajax({
 						url: '/optimize_strategy',
 						type: 'POST',
@@ -624,11 +983,13 @@
 						},
 					});
 				});
+
 				// Handle Monte Carlo simulation form submission
 				$('#monte-carlo-form').submit(function (e) {
 					e.preventDefault();
 					var formData = $(this).serializeArray();
 					var jsonData = {};
+
 					$.each(formData, function () {
 						if (this.name.startsWith('strategy_params.')) {
 							if (!jsonData.strategy_params)
@@ -639,6 +1000,7 @@
 							jsonData[this.name] = this.value;
 						}
 					});
+
 					$.ajax({
 						url: '/run_monte_carlo',
 						type: 'POST',
@@ -653,6 +1015,7 @@
 									$('<p>').text(key + ': ' + value.toFixed(4)),
 								);
 							});
+
 							// Plot Monte Carlo equity curves
 							var equityCurves = data.simulated_equity_curves.map(
 								function (curve, i) {
@@ -665,11 +1028,13 @@
 									};
 								},
 							);
+
 							Plotly.newPlot('mc-equity-curves', equityCurves, {
 								title: 'Monte Carlo Simulations',
 								xaxis: { title: 'Trade Number' },
 								yaxis: { title: 'Equity' },
 							});
+
 							$('#monte-carlo-results').show();
 						},
 						error: function (jqXHR, textStatus, errorThrown) {

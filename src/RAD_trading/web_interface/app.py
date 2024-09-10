@@ -85,10 +85,13 @@ def run_monte_carlo():
             data['timeframe'],
             pd.to_datetime(data['start_date']),
             pd.to_datetime(data['end_date']),
-            data['initial_balance'],
+            float(data['initial_balance']),  # Ensure this is a float
             data['strategy_params']
         )
-        mc_results, simulated_equity_curves = backtesting_interface.run_monte_carlo(backtest_results, data.get('num_simulations', 1000))
+        mc_results, simulated_equity_curves = backtesting_interface.run_monte_carlo(
+            backtest_results,
+            int(data.get('num_simulations', 1000))  # Ensure this is an integer
+        )
         return jsonify({
             'mc_results': mc_results,
             'simulated_equity_curves': simulated_equity_curves.tolist()

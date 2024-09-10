@@ -51,7 +51,11 @@ class BacktestingInterface:
         )
         return best_params, best_metric
     def run_monte_carlo(self, backtest_results, num_simulations=1000):
-        initial_balance = backtest_results['equity_curve'].iloc[0]
+        initial_balance = float(backtest_results['equity_curve'].iloc[0])
         trades = backtest_results['trades']
+        # Ensure trade data are numerical
+        trades['entry_price'] = pd.to_numeric(trades['entry_price'], errors='coerce')
+        trades['exit_price'] = pd.to_numeric(trades['exit_price'], errors='coerce')
+        trades['profit'] = pd.to_numeric(trades['profit'], errors='coerce')
         mc_results, simulated_equity_curves = monte_carlo_simulation(trades, initial_balance, num_simulations)
         return mc_results, simulated_equity_curves

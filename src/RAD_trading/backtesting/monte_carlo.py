@@ -2,8 +2,11 @@
 import numpy as np
 import pandas as pd
 def monte_carlo_simulation(trades, initial_balance, num_simulations=1000):
-    trade_returns = trades['profit'] / trades['entry_price']
-    simulated_returns = np.random.choice(trade_returns, size=(num_simulations, len(trades)), replace=True)
+    # Ensure trade returns are numerical
+    trade_returns = pd.to_numeric(trades['profit'] / trades['entry_price'], errors='coerce')
+    # Remove any NaN values that might have resulted from the conversion
+    trade_returns = trade_returns.dropna()
+    simulated_returns = np.random.choice(trade_returns, size=(num_simulations, len(trade_returns)), replace=True)
     simulated_equity_curves = initial_balance * (1 + simulated_returns).cumprod(axis=1)
     final_balances = simulated_equity_curves[:, -1]
     results = {

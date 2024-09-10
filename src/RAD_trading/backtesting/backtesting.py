@@ -40,32 +40,32 @@ class BacktestingEngine:
         }
         return results
     def _run_backtest_logic(self, strategy, data, initial_balance):
-        balance = initial_balance
+        balance = float(initial_balance)  # Ensure initial_balance is a float
         position = None
         trades = []
-        equity_curve = [initial_balance]
+        equity_curve = [balance]
 
         for i in range(1, len(data)):
             try:
                 signals = strategy.generate_signal(data.iloc[:i+1])
                 current_signal = signals.iloc[-1]['signal']
-                current_price = data.iloc[i]['close']
+                current_price = float(data.iloc[i]['close'])  # Ensure price is a float
 
                 self.logger.debug(f"Processing data point {i}: Signal={current_signal}, Price={current_price}")
 
                 if position is None and current_signal in ['buy', 'sell']:
                     position = {
                         'type': current_signal,
-                        'entry_price': float(current_price),
+                        'entry_price': current_price,
                         'entry_time': str(data.index[i])
                     }
                     self.logger.debug(f"Opening position: {position}")
                 elif position is not None:
                     if (position['type'] == 'buy' and current_signal == 'sell') or \
                     (position['type'] == 'sell' and current_signal == 'buy'):
-                        exit_price = float(current_price)
+                        exit_price = current_price
                         profit = (exit_price - position['entry_price']) if position['type'] == 'buy' else (position['entry_price'] - exit_price)
-                        balance += profit
+                        balance += profit  # This should now work correctly
                         trade = {
                             'entry_time': position['entry_time'],
                             'exit_time': str(data.index[i]),
@@ -78,7 +78,7 @@ class BacktestingEngine:
                         self.logger.debug(f"Closing position: {trade}")
                         position = None
 
-                equity_curve.append(float(balance))
+                equity_curve.append(balance)
             except Exception as e:
                 self.logger.error(f"Error at data point {i}: {str(e)}", exc_info=True)
                 raise

@@ -17,3 +17,6 @@
 /src/RAD_trading/backtesting/__pycache__
 /src/RAD_trading/web_interface/__pycache__
 /src/RAD_trading/strategies/custom_strategies/__pycache__
+/logs
+logs/backtesting.log
+*.log
