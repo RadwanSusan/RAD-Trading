@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<!-- src\RAD_trading\web_interface\templates\index.html -->
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0" />
+		<title>RAD Trading Bot</title>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 20px;
+			}
+			h1,
+			h2 {
+				text-align: center;
+			}
+			form {
+				display: grid;
+				gap: 10px;
+			}
+			button {
+				cursor: pointer;
+			}
+			.tab {
+				display: none;
+			}
+			.tab-buttons {
+				display: flex;
+				justify-content: center;
+				margin-bottom: 20px;
+			}
+			.tab-buttons button {
+				margin: 0 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>RAD Trading Bot</h1>
+
+		<div class="tab-buttons">
+			<button onclick="openTab('live-trading')">Live Trading</button>
+			<button onclick="openTab('backtesting')">Backtesting</button>
+		</div>
+
+		<div
+			id="live-trading"
+			class="tab">
+			<h2>Live Trading</h2>
+			<form id="bot-form">
+				<label for="symbols">Symbols (comma-separated):</label>
+				<input
+					type="text"
+					id="symbols"
+					name="symbols"
+					required />
+
+				<label for="timeframe">Timeframe:</label>
+				<select
+					id="timeframe"
+					name="timeframe"
+					required>
+					<option value="TIMEFRAME_M1">1 minute</option>
+					<option value="TIMEFRAME_M5">5 minutes</option>
+					<option value="TIMEFRAME_M15">15 minutes</option>
+					<option value="TIMEFRAME_H1">1 hour</option>
+					<option value="TIMEFRAME_H4">4 hours</option>
+					<option value="TIMEFRAME_D1">1 day</option>
+				</select>
+
+				<label for="strategy_type">Strategy:</label>
+				<select
+					id="strategy_type"
+					name="strategy_type"
+					required>
+					<option value="SMA">SMA Crossover</option>
+					<option value="RSI">RSI</option>
+				</select>
+
+				<div id="sma-params">
+					<label for="short_period">Short SMA Period:</label>
+					<input
+						type="number"
+						id="short_period"
+						name="short_period" />
+
+					<label for="long_period">Long SMA Period:</label>
+					<input
+						type="number"
+						id="long_period"
+						name="long_period" />
+				</div>
+
+				<div
+					id="rsi-params"
+					style="display: none">
+					<label for="rsi_period">RSI Period:</label>
+					<input
+						type="number"
+						id="rsi_period"
+						name="rsi_period" />
+
+					<label for="overbought">Overbought Level:</label>
+					<input
+						type="number"
+						id="overbought"
+						name="overbought" />
+
+					<label for="oversold">Oversold Level:</label>
+					<input
+						type="number"
+						id="oversold"
+						name="oversold" />
+				</div>
+
+				<label for="risk_percentage">Risk Percentage:</label>
+				<input
+					type="number"
+					id="risk_percentage"
+					name="risk_percentage"
+					step="0.1"
+					required />
+
+				<button
+					type="submit"
+					id="start-bot">
+					Start Bot
+				</button>
+			</form>
+			<button
+				id="stop-bot"
+				style="display: none">
+				Stop Bot
+			</button>
+			<div id="status"></div>
+			<div id="performance">
+				<h3>Performance</h3>
+				<p>Current Balance: $<span id="current-balance"></span></p>
+				<p>Profit/Loss: $<span id="profit-loss"></span></p>
+				<p>Trade Count: <span id="trade-count"></span></p>
+				<p>Win Rate: <span id="win-rate"></span></p>
+			</div>
+			<div id="equity-chart"></div>
+			<div id="drawdown-chart"></div>
+		</div>
+
+		<div
+			id="backtesting"
+			class="tab">
+			<h2>Backtesting</h2>
+			<form id="backtest-form">
+				<label for="backtest-symbol">Symbol:</label>
+				<input
+					type="text"
+					id="backtest-symbol"
+					name="symbol"
+					required />
+
+				<label for="backtest-timeframe">Timeframe:</label>
+				<select
+					id="backtest-timeframe"
+					name="timeframe"
+					required>
+					<option value="TIMEFRAME_M1">1 minute</option>
+					<option value="TIMEFRAME_M5">5 minutes</option>
+					<option value="TIMEFRAME_M15">15 minutes</option>
+					<option value="TIMEFRAME_H1">1 hour</option>
+					<option value="TIMEFRAME_H4">4 hours</option>
+					<option value="TIMEFRAME_D1">1 day</option>
+				</select>
+
+				<label for="backtest-start-date">Start Date:</label>
+				<input
+					type="date"
+					id="backtest-start-date"
+					name="start_date"
+					required />
+
+				<label for="backtest-end-date">End Date:</label>
+				<input
+					type="date"
+					id="backtest-end-date"
+					name="end_date"
+					required />
+
+				<label for="backtest-initial-balance">Initial Balance:</label>
+				<input
+					type="number"
+					id="backtest-initial-balance"
+					name="initial_balance"
+					required />
+
+				<label for="backtest-short-period">Short SMA Period:</label>
+				<input
+					type="number"
+					id="backtest-short-period"
+					name="short_period"
+					required />
+
+				<label for="backtest-long-period">Long SMA Period:</label>
+				<input
+					type="number"
+					id="backtest-long-period"
+					name="long_period"
+					required />
+
+				<button type="submit">Run Backtest</button>
+			</form>
+			<div
+				id="backtest-results"
+				style="display: none">
+				<h3>Backtest Results</h3>
+				<p>Sharpe Ratio: <span id="sharpe-ratio"></span></p>
+				<p>Max Drawdown: <span id="max-drawdown"></span></p>
+				<p>Final Balance: <span id="final-balance"></span></p>
+				<div id="backtest-equity-plot"></div>
+				<div id="backtest-drawdown-plot"></div>
+			</div>
+		</div>
+
+		<script>
+			function openTab(tabName) {
+				var tabs = document.getElementsByClassName('tab');
+				for (var i = 0; i < tabs.length; i++) {
+					tabs[i].style.display = 'none';
+				}
+				document.getElementById(tabName).style.display = 'block';
+			}
+
+			function updateStatus() {
+				$.get('/bot_status', function (data) {
+					$('#status').text('Bot status: ' + data.status);
+					if (data.status === 'running') {
+						$('#start-bot').hide();
+						$('#stop-bot').show();
+					} else {
+						$('#start-bot').show();
+						$('#stop-bot').hide();
+					}
+				});
+			}
+
+			function updateCharts() {
+				$.get('/performance', function (data) {
+					if (data.status === 'success') {
+						$('#current-balance').text(data.current_balance.toFixed(2));
+						$('#profit-loss').text(data.profit_loss.toFixed(2));
+						$('#trade-count').text(data.trade_count);
+						$('#win-rate').text((data.win_rate * 100).toFixed(2) + '%');
+
+						Plotly.newPlot(
+							'equity-chart',
+							[
+								{
+									x: data.timestamps,
+									y: data.equity_curve,
+									type: 'scatter',
+									mode: 'lines',
+									name: 'Equity',
+								},
+							],
+							{ title: 'Equity Curve' },
+						);
+
+						Plotly.newPlot(
+							'drawdown-chart',
+							[
+								{
+									x: data.timestamps,
+									y: data.drawdown,
+									type: 'scatter',
+									mode: 'lines',
+									name: 'Drawdown',
+								},
+							],
+							{ title: 'Drawdown' },
+						);
+					}
+				});
+			}
+
+			$(document).ready(function () {
+				openTab('live-trading');
+
+				updateStatus();
+				setInterval(updateStatus, 5000);
+				setInterval(updateCharts, 60000);
+
+				$('#strategy_type').change(function () {
+					if ($(this).val() === 'SMA') {
+						$('#sma-params').show();
+						$('#rsi-params').hide();
+					} else {
+						$('#sma-params').hide();
+						$('#rsi-params').show();
+					}
+				});
+
+				$('#bot-form').submit(function (e) {
+					e.preventDefault();
+					$.post('/start_bot', $(this).serialize(), function (data) {
+						alert(data.message);
+						updateStatus();
+					});
+				});
+
+				$('#stop-bot').click(function () {
+					$.post('/stop_bot', function (data) {
+						alert(data.message);
+						updateStatus();
+					});
+				});
+
+				$('#backtest-form').submit(function (e) {
+					e.preventDefault();
+					$.post('/backtest', $(this).serialize(), function (data) {
+						$('#sharpe-ratio').text(data.sharpe_ratio.toFixed(2));
+						$('#max-drawdown').text(
+							(data.max_drawdown * 100).toFixed(2) + '%',
+						);
+						$('#final-balance').text('$' + data.final_balance.toFixed(2));
+
+						Plotly.newPlot(
+							'backtest-equity-plot',
+							JSON.parse(data.equity_plot),
+						);
+						Plotly.newPlot(
+							'backtest-drawdown-plot',
+							JSON.parse(data.drawdown_plot),
+						);
+
+						$('#backtest-results').show();
+					});
+				});
+			});
+		</script>
+	</body>
+</html>

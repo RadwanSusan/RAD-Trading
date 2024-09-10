@@ -7,6 +7,8 @@ from .mt5_trade_utils import (
     calculate_margin_required, wait_for_market_open,
     get_exposure, initialize_mt5, shutdown_mt5
 )
+from .notifications import email_notifier
+from .logging_config import trading_logger, backtesting_logger, performance_logger
 __all__ = [
     'Backtester',
     'send_market_order',
@@ -23,4 +25,8 @@ __all__ = [
     'get_exposure',
     'initialize_mt5',
     'shutdown_mt5',
+    'email_notifier',
+    'trading_logger',
+    'backtesting_logger',
+    'performance_logger',
 ]

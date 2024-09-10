@@ -1,7 +1,7 @@
 # config\mt5_config.py
 mt5_credentials = {
     'login': 110413,
-    'password': 'UwPpl33.g8',
+    'password': 'Blackbird@007',
     'server': 'FusionMarkets-Demo',
     'exe_path': "C:\\Program Files\\Fusion Markets MetaTrader 5\\terminal64.exe"
 }

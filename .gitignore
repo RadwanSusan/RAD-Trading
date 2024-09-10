@@ -5,3 +5,14 @@
 /src/RAD_trading/config/__pycache__
 /src/RAD_trading/mt5_trade_utils/__pycache__
 /src/RAD_trading/utils/__pycache__
+/myenv
+/src/rad-trading
+/src/RAD_trading/strategies/__pycache__
+/src/RAD_trading/visualization/__pycache__
+/src/RAD_trading/risk_management/__pycache__
+/src/tests/__pycache__
+/tests/__pycache__
+/src/RAD_trading/performance_analytics/__pycache__
+/src/RAD_trading/data_providers/__pycache__
+/src/RAD_trading/backtesting/__pycache__
+/src/RAD_trading/web_interface/__pycache__
