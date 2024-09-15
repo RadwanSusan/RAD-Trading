@@ -20,3 +20,7 @@
 /logs
 logs/backtesting.log
 *.log
+/src/RAD_trading/optimization/__pycache__
+/logs
+logs/backtesting.log
+/data_cache

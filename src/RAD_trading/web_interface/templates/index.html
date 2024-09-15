@@ -335,6 +335,20 @@
 										class="form-control"
 										required />
 								</div>
+								<div class="mb-3">
+									<label
+										for="comparison-position-size"
+										class="form-label"
+										>Position Size:</label
+									>
+									<input
+										type="number"
+										class="form-control"
+										id="comparison-position-size"
+										step="0.01"
+										min="0.01"
+										value="0.01" />
+								</div>
 								<div id="strategies-to-compare"></div>
 								<button
 									type="button"
@@ -460,6 +474,51 @@
 										name="initial_balance"
 										class="form-control"
 										required />
+								</div>
+								<div class="mb-3">
+									<label class="form-label"
+										>Position Size Range:</label
+									>
+									<div class="input-group">
+										<input
+											type="number"
+											name="param_ranges.position_size.start"
+											class="form-control"
+											placeholder="Start"
+											step="0.01"
+											min="0.01"
+											required />
+										<input
+											type="number"
+											name="param_ranges.position_size.end"
+											class="form-control"
+											placeholder="End"
+											step="0.01"
+											min="0.01"
+											required />
+										<input
+											type="number"
+											name="param_ranges.position_size.step"
+											class="form-control"
+											placeholder="Step"
+											step="0.01"
+											min="0.01"
+											required />
+									</div>
+								</div>
+								<div class="mb-3">
+									<label
+										for="max-position-size"
+										class="form-label"
+										>Max Position Size:</label
+									>
+									<input
+										type="number"
+										class="form-control"
+										id="max-position-size"
+										step="0.01"
+										min="0.01"
+										value="0.1" />
 								</div>
 								<div class="mb-3">
 									<label
@@ -594,6 +653,22 @@
 								</div>
 								<div class="mb-3">
 									<label
+										for="mc-position-size"
+										class="form-label"
+										>Position Size:</label
+									>
+									<input
+										type="number"
+										id="mc-position-size"
+										name="position_size"
+										class="form-control"
+										step="0.01"
+										min="0.01"
+										value="0.01"
+										required />
+								</div>
+								<div class="mb-3">
+									<label
 										for="mc-num-simulations"
 										class="form-label"
 										>Number of Simulations:</label
@@ -685,11 +760,9 @@
 						},
 					);
 				}
-
 				$('#strategy').change(function () {
 					loadStrategyParams($(this), $('#strategy-params'));
 				});
-
 				$('#optimize-strategy').change(function () {
 					var strategy = $(this).val();
 					$.get(
@@ -762,6 +835,8 @@
 								jsonData.strategy_params = {};
 							jsonData.strategy_params[this.name.split('.')[1]] =
 								parseFloat(this.value);
+						} else if (this.name === 'position_size') {
+							jsonData.position_size = parseFloat(this.value);
 						} else {
 							jsonData[this.name] = this.value;
 						}
@@ -855,6 +930,7 @@
 					var jsonData = {
 						backtest_params: {},
 						strategies_to_compare: {},
+						position_size: 0.01,
 					};
 
 					$.each(formData, function () {
@@ -868,12 +944,13 @@
 							jsonData.strategies_to_compare[strategyName][paramName] =
 								parseFloat(this.value);
 						} else if (this.name.startsWith('strategy_')) {
-							jsonData.strategies_to_compare[this.name] = {};
+							jsonData.strategies_to_compare[this.value] = {};
+						} else if (this.name === 'position_size') {
+							jsonData.position_size = parseFloat(this.value);
 						} else {
 							jsonData.backtest_params[this.name] = this.value;
 						}
 					});
-
 					$.ajax({
 						url: '/compare_strategies',
 						type: 'POST',
@@ -996,6 +1073,8 @@
 								jsonData.strategy_params = {};
 							jsonData.strategy_params[this.name.split('.')[1]] =
 								parseFloat(this.value);
+						} else if (this.name === 'position_size') {
+							jsonData.position_size = parseFloat(this.value);
 						} else {
 							jsonData[this.name] = this.value;
 						}

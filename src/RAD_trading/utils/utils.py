@@ -1,6 +1,8 @@
 # src\RAD_trading\utils.py
 import pandas as pd
 import numpy as np
+
+
 def calculate_sharpe_ratio(returns, risk_free_rate=0.02, periods=252):
     """
     Calculate the Sharpe ratio of a returns series.
@@ -11,6 +13,8 @@ def calculate_sharpe_ratio(returns, risk_free_rate=0.02, periods=252):
     """
     excess_returns = returns - risk_free_rate / periods
     return np.sqrt(periods) * excess_returns.mean() / excess_returns.std()
+
+
 def calculate_sortino_ratio(returns, risk_free_rate=0.02, periods=252):
     """
     Calculate the Sortino ratio of a returns series.
@@ -22,6 +26,8 @@ def calculate_sortino_ratio(returns, risk_free_rate=0.02, periods=252):
     excess_returns = returns - risk_free_rate / periods
     downside_returns = excess_returns[excess_returns < 0]
     return np.sqrt(periods) * excess_returns.mean() / downside_returns.std()
+
+
 def calculate_max_drawdown(equity_curve):
     """
     Calculate the maximum drawdown of an equity curve.
@@ -31,18 +37,22 @@ def calculate_max_drawdown(equity_curve):
     peak = equity_curve.cummax()
     drawdown = (equity_curve - peak) / peak
     return drawdown.min()
+
+
 def resample_ohlc(df, timeframe):
     """
     Resample OHLC data to a new timeframe.
-    :param df: pandas DataFrame with 'open', 'high', 'low', 'close', and 'volume' columns
+    :param df: pandas DataFrame with 'open', 'high', 'low', 'close', and 'tick_volume' columns
     :param timeframe: new timeframe as a string (e.g., '4H', '1D')
     :return: resampled DataFrame
     """
-    resampled = df.resample(timeframe).agg({
-        'open': 'first',
-        'high': 'max',
-        'low': 'min',
-        'close': 'last',
-        'volume': 'sum'
-    })
+    resampled = df.resample(timeframe).agg(
+        {
+            "open": "first",
+            "high": "max",
+            "low": "min",
+            "close": "last",
+            "tick_volume": "sum",
+        }
+    )
     return resampled.dropna()
